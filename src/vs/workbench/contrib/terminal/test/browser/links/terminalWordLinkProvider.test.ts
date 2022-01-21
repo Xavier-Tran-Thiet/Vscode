@@ -10,7 +10,7 @@ import { TestInstantiationService } from 'vs/platform/instantiation/test/common/
 import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IEditorOptions, ITextResourceEditorInput } from 'vs/platform/editor/common/editor';
-import { AbstractLogger, DEFAULT_LOG_LEVEL, ILogger, ILogService, LogLevel, LogService, NullLogService } from 'vs/platform/log/common/log';
+import { ILogService, NullLogService } from 'vs/platform/log/common/log';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { TestThemeService } from 'vs/platform/theme/test/common/testThemeService';
@@ -18,10 +18,10 @@ import { IViewDescriptorService } from 'vs/workbench/common/views';
 import { TerminalConfigHelper } from 'vs/workbench/contrib/terminal/browser/terminalConfigHelper';
 import { ITerminalConfigHelper, ITerminalConfiguration } from 'vs/workbench/contrib/terminal/common/terminal';
 import { TestContextService, TestStorageService } from 'vs/workbench/test/common/workbenchTestServices';
-import { TerminalCapabilityStore } from 'vs/workbench/contrib/terminal/common/capabilities/terminalCapabilityStore';
+import { TerminalCapabilityStore } from 'vs/workbench/contrib/terminal/browser/capabilities/terminalCapabilityStore';
 import { XtermTerminal } from 'vs/workbench/contrib/terminal/browser/xterm/xtermTerminal';
 import { TerminalCapability, TerminalLocation } from 'vs/platform/terminal/common/terminal';
-import { CwdDetectionCapability } from 'vs/workbench/contrib/terminal/common/capabilities/cwdDetectionCapability';
+import { CwdDetectionCapability } from 'vs/workbench/contrib/terminal/browser/capabilities/cwdDetectionCapability';
 import { CognisantCommandTrackerAddon } from 'vs/workbench/contrib/terminal/browser/xterm/cognisantCommandTrackerAddon';
 import { TestViewDescriptorService } from 'vs/workbench/contrib/terminal/test/browser/xterm/xtermTerminal.test';
 import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
@@ -42,66 +42,14 @@ const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
 };
 
 class TestCommandTracker extends CognisantCommandTrackerAddon {
-	private _currentCwd: string | undefined;
-	override getCwdForLine(y: number): string {
-		return this._currentCwd || '';
-	}
+	// private _currentCwd: string | undefined;
 	setCwd(cwd: string): void {
-		this._currentCwd = cwd;
+		// this._currentCwd = cwd;
 	}
-}
-
-class TestLogger extends AbstractLogger implements ILogger {
-
-	public logs: string[] = [];
-
-	constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
-		super();
-		this.setLevel(logLevel);
-	}
-
-	trace(message: string, ...args: any[]): void {
-		if (this.getLevel() <= LogLevel.Trace) {
-			this.logs.push(message + JSON.stringify(args));
-		}
-	}
-
-	debug(message: string, ...args: any[]): void {
-		if (this.getLevel() <= LogLevel.Debug) {
-			this.logs.push(message);
-		}
-	}
-
-	info(message: string, ...args: any[]): void {
-		if (this.getLevel() <= LogLevel.Info) {
-			this.logs.push(message);
-		}
-	}
-
-	warn(message: string | Error, ...args: any[]): void {
-		if (this.getLevel() <= LogLevel.Warning) {
-			this.logs.push(message.toString());
-		}
-	}
-
-	error(message: string, ...args: any[]): void {
-		if (this.getLevel() <= LogLevel.Error) {
-			this.logs.push(message);
-		}
-	}
-
-	critical(message: string, ...args: any[]): void {
-		if (this.getLevel() <= LogLevel.Critical) {
-			this.logs.push(message);
-		}
-	}
-
-	override dispose(): void { }
-	flush(): void { }
 }
 
 class TestXtermTerminal extends XtermTerminal {
-	override get commandTracker(): TestCommandTracker { return new TestCommandTracker(new LogService(new TestLogger())); }
+	override get commandTracker(): TestCommandTracker { return new TestCommandTracker(new NullLogService()); }
 }
 
 suite('Workbench - TerminalWordLinkProvider', () => {

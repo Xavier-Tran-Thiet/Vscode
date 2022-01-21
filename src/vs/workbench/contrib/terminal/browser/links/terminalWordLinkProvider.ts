@@ -25,7 +25,7 @@ import { Schemas } from 'vs/base/common/network';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
 import { XtermTerminal } from 'vs/workbench/contrib/terminal/browser/xterm/xtermTerminal';
 import { TerminalCapability } from 'vs/platform/terminal/common/terminal';
-import { ITerminalCapabilityStore } from 'vs/workbench/contrib/terminal/common/capabilities/capabilities';
+import { ITerminalCapabilityStore } from 'vs/workbench/contrib/terminal/browser/capabilities/capabilities';
 
 const MAX_LENGTH = 2000;
 
@@ -193,7 +193,8 @@ export class TerminalWordLinkProvider extends TerminalBaseLinkProvider {
 	* of the particular link is used to narrow down the result for an exact file match, if possible.
 	*/
 	private _updateLinkWithRelativeCwd(y: number, link: string, pathSeparator: string): string | undefined {
-		const cwd = this._xterm.commandTracker.getCwdForLine(y);
+		// TODO: If the capability is set but getCwdForLine returns undefined, the line should be relative to initialCwd
+		const cwd = this._capabilities.get(TerminalCapability.CommandDetection)?.getCwdForLine(y);
 		if (!cwd) {
 			return undefined;
 		}
